@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lilac Sip · Water Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg1:#efe7ff;--bg2:#d9c9fb;--ink:#3b2a63;--soft:#7a68a8;--glass:rgba(255,255,255,.55);--edge:rgba(255,255,255,.8);--acc:#8b5cf6;--acc2:#b79cf7;--sh:0 10px 30px rgba(110,80,190,.18);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#241a3d;--bg2:#3a2a63;--ink:#f0eaff;--soft:#b9a9e4;--glass:rgba(255,255,255,.09);--edge:rgba(255,255,255,.18);--sh:0 10px 30px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg1:#241a3d;--bg2:#3a2a63;--ink:#f0eaff;--soft:#b9a9e4;--glass:rgba(255,255,255,.09);--edge:rgba(255,255,255,.18);--sh:0 10px 30px rgba(0,0,0,.35)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(60px);z-index:-1;opacity:.55}
+body:before{width:320px;height:320px;background:#c4a7ff;top:-80px;left:-80px}
+body:after{width:280px;height:280px;background:#f0b8ff;bottom:-60px;right:-60px}
+main{max-width:460px;margin:0 auto;padding:18px 16px 40px;display:flex;flex-direction:column;gap:14px}
+.g{background:var(--glass);border:1px solid var(--edge);border-radius:28px;box-shadow:var(--sh);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:18px}
+h1,.serif{font-family:'Fraunces',Georgia,serif;font-weight:600;margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top h1{font-size:1.55rem;line-height:1.15}
+.tip{color:var(--soft);font-size:.92rem;margin:6px 0 0;line-height:1.4}
+.pill{border:1px solid var(--edge);background:var(--glass);border-radius:999px;padding:8px 14px;font-size:.85rem;font-weight:700;color:var(--ink);display:inline-flex;gap:6px;align-items:center}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.meter-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.meter{position:relative;width:230px;height:230px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.35);border:3px solid var(--edge);box-shadow:inset 0 6px 24px rgba(110,80,190,.2),var(--sh)}
+.fill{position:absolute;left:0;right:0;bottom:0;height:0;transition:height 1.4s cubic-bezier(.3,.8,.2,1);background:linear-gradient(180deg,#b79cf7,#7c4ddb)}
+.wave{position:absolute;left:0;top:-22px;width:200%;height:24px;animation:sw 5s linear infinite}
+.wave.b{animation-duration:8s;animation-direction:reverse;opacity:.5;top:-28px}
+@keyframes sw{to{transform:translateX(-50%)}}
+.readout{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+.pct{font-family:'Fraunces',serif;font-size:3rem;font-weight:600;text-shadow:0 1px 8px rgba(255,255,255,.7)}
+.meter.deep .pct,.meter.deep .sub{color:#fff;text-shadow:0 1px 6px rgba(60,20,120,.5)}
+.sub{font-size:.85rem;font-weight:500;color:var(--soft)}
+.stat{font-weight:500;font-size:.95rem}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.q{background:linear-gradient(160deg,var(--acc2),var(--acc));color:#fff;border-radius:999px;padding:14px 6px;font-weight:700;box-shadow:0 8px 18px rgba(139,92,246,.35);position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.3,1.8,.5,1)}
+.q small{display:block;font-weight:500;opacity:.85;font-size:.72rem}
+.q:active{transform:scale(.9)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:rp .6s ease-out forwards;pointer-events:none}
+@keyframes rp{to{transform:scale(4);opacity:0}}
+.row{display:flex;gap:10px;align-items:center}
+.row>*{flex:1}
+input[type=number]{width:100%;border-radius:999px;border:1px solid var(--edge);background:var(--glass);padding:12px 16px;font:inherit;color:var(--ink)}
+.ghost{border:1px solid var(--edge);background:var(--glass);border-radius:999px;padding:12px;font-weight:700;transition:transform .2s}
+.ghost:active{transform:scale(.93)}
+.ghost:disabled{opacity:.4;cursor:default}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0}
+.sw{width:50px;height:30px;border-radius:999px;background:rgba(120,100,170,.35);position:relative;flex:none;transition:background .3s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.sw[aria-checked=true]{background:var(--acc)}
+.sw[aria-checked=true]:after{transform:translateX(20px)}
+select{border-radius:999px;border:1px solid var(--edge);background:var(--glass);color:var(--ink);padding:8px 12px;font:inherit}
+.bars{display:flex;align-items:flex-end;gap:3px;height:70px;margin-top:10px}
+.bars i{flex:1;background:linear-gradient(180deg,var(--acc2),var(--acc));border-radius:6px 6px 2px 2px;min-height:3px;opacity:.9;transition:height .6s}
+.bars i.z{background:rgba(140,120,190,.3)}
+.axis{display:flex;justify-content:space-between;font-size:.72rem;color:var(--soft);margin-top:4px}
+h2{font-family:'Fraunces',serif;font-size:1.05rem;margin:0}
+.log{list-style:none;margin:8px 0 0;padding:0;max-height:120px;overflow:auto;font-size:.88rem;color:var(--soft)}
+.log li{display:flex;justify-content:space-between;padding:4px 0}
+.card-done{display:none;text-align:center;background:linear-gradient(160deg,rgba(255,255,255,.7),rgba(200,170,255,.55));animation:glow 2.4s ease-in-out infinite}
+.card-done.on{display:block}
+@keyframes glow{50%{box-shadow:0 0 40px rgba(167,120,255,.75)}}
+.quote{font-family:'Fraunces',serif;font-size:1.15rem;line-height:1.4;margin:10px 0 4px}
+.by{font-size:.85rem;color:var(--soft)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,120px);background:var(--ink);color:var(--bg1);padding:12px 20px;border-radius:999px;font-weight:500;transition:transform .5s cubic-bezier(.3,1.4,.5,1);z-index:50;max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+.cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header class="g">
+    <div class="top">
+      <h1 id="greet">Hello</h1>
+      <span class="pill" title="Days in a row you hit your goal">🔥 <span id="streak">0</span> day streak</span>
+    </div>
+    <p class="tip" id="tip"></p>
+  </header>
+
+  <section class="g meter-wrap" aria-label="Today's progress">
+    <div class="meter" id="meter" role="img" aria-label="Water level">
+      <div class="fill" id="fill">
+        <svg class="wave b" viewBox="0 0 400 24" preserveAspectRatio="none"><path d="M0 12 Q50 0 100 12 T200 12 T300 12 T400 12 V24 H0Z" fill="#b79cf7"/></svg>
+        <svg class="wave" viewBox="0 0 400 24" preserveAspectRatio="none"><path d="M0 12 Q50 24 100 12 T200 12 T300 12 T400 12 V24 H0Z" fill="#9a70f5"/></svg>
+      </div>
+      <div class="readout"><div class="pct" id="pct">0%</div><div class="sub" id="sub">0 / 4,500 ml</div></div>
+    </div>
+    <div class="stat" id="left"></div>
+  </section>
+
+  <section class="g">
+    <div class="quick">
+      <button class="q" data-ml="250">+250 ml<small>Cup</small></button>
+      <button class="q" data-ml="500">+500 ml<small>Bottle</small></button>
+      <button class="q" data-ml="750">+750 ml<small>Flask</small></button>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <input type="number" id="custom" min="1" max="3000" step="10" placeholder="Custom ml" aria-label="Custom amount in millilitres" style="flex:2">
+      <button class="ghost" id="addc">Add</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="ghost" id="undo">Undo last</button>
+      <button class="ghost" id="reset">Reset day</button>
+    </div>
+  </section>
+
+  <section class="card-done g" id="done">
+    <div style="font-size:1.8rem">✨</div>
+    <h2>Goal reached! 4.5 L done.</h2>
+    <p class="quote" id="quote"></p>
+    <div class="by" id="by"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="ghost" id="nextq">Next quote</button>
+      <button class="ghost" id="favq">♡ Save</button>
+    </div>
+    <div class="by" id="favc" style="margin-top:8px"></div>
+  </section>
+
+  <section class="g">
+    <h2>Today by hour</h2>
+    <div class="bars" id="bars"></div>
+    <div class="axis"><span>12a</span><span>6a</span><span>12p</span><span>6p</span><span>11p</span></div>
+    <ul class="log" id="log"></ul>
+  </section>
+
+  <section class="g">
+    <h2>Reminders</h2>
+    <div class="set"><span>Notify me to drink</span><button class="sw" id="rem" role="switch" aria-checked="false" aria-label="Reminders"></button></div>
+    <div class="set"><span>Every</span>
+      <select id="int" aria-label="Reminder interval"><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option><option value="90">90 min</option></select></div>
+    <div class="set"><span>Play chime</span><button class="sw" id="snd" role="switch" aria-checked="true" aria-label="Chime"></button></div>
+    <div class="set"><button class="ghost" id="test" style="flex:1">Send a test reminder</button></div>
+    <p class="tip" id="remnote"></p>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const GOAL=4500, KEY='lilacsip.v1';
+const $=id=>document.getElementById(id);
+const QUOTES=[
+["Water your own garden first; the rest will bloom around you.","Anonymous"],
+["Small steady sips, like small steady steps, carry you a long way.","Anonymous"],
+["Nothing is softer or more flexible than water, yet nothing can resist it.","Lao Tzu"],
+["Be like water: patient, adaptable, and always finding a way.","Anonymous"],
+["Take care of your body. It's the only place you have to live.","Jim Rohn"],
+["You are allowed to be both a masterpiece and a work in progress.","Sophia Bush"],
+["Do something today that your future self will thank you for.","Sean Patrick Flanery"],
+["Calm is a superpower. Hydrate, breathe, begin again.","Anonymous"],
+["Every day is a fresh page. Fill it gently.","Anonymous"],
+["What you do every day matters more than what you do once in a while.","Gretchen Rubin"]];
+const TIPS={
+ morning:["Good morning! Start your day with 500 ml.","A glass before coffee wakes everything up gently."],
+ midday:["Midday check-in: your focus loves water.","Lunch time. Pair your meal with a full cup."],
+ afternoon:["Afternoon dip? Sip some water instead of reaching for sugar.","A flask now keeps the 3 pm slump away."],
+ evening:["Good evening! Ease off the big pours after 8 pm to sleep well.","Slow, small sips now. Almost there."],
+ night:["Late hours: a few sips is plenty. Rest well.","Sleep is hydration's best friend. Sip lightly."]};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const yest=()=>{const d=new Date(Date.now()-864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let S=load();
+function fresh(){return{date:today(),entries:[],streak:0,lastGoal:null,rem:false,int:60,snd:true,next:0,qi:0,favs:[],celebrated:false}}
+function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  s=Object.assign(fresh(),s||{});
+  if(s.date!==today()){ if(s.lastGoal!==yest()&&s.lastGoal!==today())s.streak=0; s.date=today();s.entries=[];s.celebrated=false;}
+  return s}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const total=()=>S.entries.reduce((a,e)=>a+e.ml,0);
+const fmt=n=>n.toLocaleString('en-US');
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),3200)}
+function chime(){if(!S.snd)return;try{const c=new (window.AudioContext||window.webkitAudioContext)();
+  [660,880,1100].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;
+   const t=c.currentTime+i*.18;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.18,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+.7);
+   o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.75)})}catch(e){}}
+function confetti(){const cols=['#8b5cf6','#b79cf7','#f0b8ff','#ffffff','#c4a7ff','#ffd6f5'];
+  for(let i=0;i<70;i++){const d=document.createElement('div');d.className='cf';d.style.left=Math.random()*100+'vw';
+   d.style.background=cols[i%cols.length];d.style.setProperty('--dx',(Math.random()*160-80)+'px');
+   d.style.animationDuration=(2.2+Math.random()*2)+'s';d.style.animationDelay=Math.random()*.6+'s';
+   document.body.appendChild(d);setTimeout(()=>d.remove(),5000)}}
+
+function greet(){const h=new Date().getHours();let g,k;
+  if(h<5){g='Still up?';k='night'}else if(h<12){g='Good morning';k='morning'}else if(h<14){g='Good day';k='midday'}
+  else if(h<17){g='Good afternoon';k='afternoon'}else if(h<21){g='Good evening';k='evening'}else{g='Good night';k='night'}
+  $('greet').textContent=g;const t=TIPS[k];$('tip').textContent=t[Math.floor(Date.now()/36e5)%t.length]}
+
+function render(){
+  const t=total(),p=Math.min(100,Math.round(t/GOAL*100));
+  $('fill').style.height=Math.min(100,t/GOAL*100)+'%';
+  $('pct').textContent=p+'%';$('sub').textContent=fmt(t)+' / '+fmt(GOAL)+' ml';
+  $('meter').classList.toggle('deep',p>=55);
+  $('meter').setAttribute('aria-label',fmt(t)+' of '+fmt(GOAL)+' millilitres, '+p+' percent');
+  $('left').textContent=t>=GOAL?'Goal complete. Lovely work.':fmt(GOAL-t)+' ml to go';
+  $('streak').textContent=S.streak;
+  $('undo').disabled=!S.entries.length;
+  $('done').classList.toggle('on',t>=GOAL);
+  const b=Array(24).fill(0);S.entries.forEach(e=>b[new Date(e.t).getHours()]+=e.ml);
+  const mx=Math.max(500,...b);
+  $('bars').innerHTML=b.map((v,i)=>`<i class="${v?'':'z'}" style="height:${v?Math.max(6,v/mx*100):4}%" title="${i}:00 · ${v} ml"></i>`).join('');
+  $('log').innerHTML=S.entries.slice().reverse().map(e=>{const d=new Date(e.t);return`<li><span>${d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</span><span>+${e.ml} ml</span></li>`}).join('')||'<li>No sips logged yet today.</li>';
+  showQuote();
+  $('rem').setAttribute('aria-checked',S.rem);$('snd').setAttribute('aria-checked',S.snd);$('int').value=S.int;
+}
+function showQuote(){const q=QUOTES[S.qi%QUOTES.length];$('quote').textContent='“'+q[0]+'”';$('by').textContent='— '+q[1];
+  const f=S.favs.includes(S.qi%QUOTES.length);$('favq').textContent=f?'♥ Saved':'♡ Save';
+  $('favc').textContent=S.favs.length?'Saved quotes: '+S.favs.length+' (tap Next quote to revisit them)':''}
+
+function add(ml){
+  if(!(ml>0))return;
+  const before=total();
+  S.entries.push({ml:Math.round(ml),t:Date.now()});
+  if(before<GOAL&&total()>=GOAL&&!S.celebrated){
+    S.celebrated=true;
+    if(S.lastGoal!==today()){S.streak=(S.lastGoal===yest()?S.streak:0)+1;S.lastGoal=today()}
+    S.qi=Math.floor(Math.random()*QUOTES.length);
+    confetti();chime();toast('You did it! 4.5 L complete 💜');
+  }
+  scheduleNext(true);save();render();
+}
+document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',e=>{
+  const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='rip';
+  s.style.cssText=`width:40px;height:40px;left:${e.clientX-r.left-20}px;top:${e.clientY-r.top-20}px`;b.appendChild(s);setTimeout(()=>s.remove(),650);
+  add(+b.dataset.ml)}));
+$('addc').onclick=()=>{const v=parseInt($('custom').value,10);if(!v||v<1||v>3000){toast('Enter an amount from 1 to 3000 ml');return}add(v);$('custom').value=''};
+$('custom').addEventListener('keydown',e=>{if(e.key==='Enter')$('addc').click()});
+$('undo').onclick=()=>{const e=S.entries.pop();if(!e)return;
+  if(S.celebrated&&total()<GOAL){S.celebrated=false;if(S.lastGoal===today()){S.streak=Math.max(0,S.streak-1);S.lastGoal=null}}
+  save();render();toast('Removed '+e.ml+' ml')};
+$('reset').onclick=()=>{if(!S.entries.length)return;if(!confirm('Reset today\'s progress to 0?'))return;
+  S.entries=[];if(S.celebrated&&S.lastGoal===today()){S.streak=Math.max(0,S.streak-1);S.lastGoal=null}S.celebrated=false;save();render();toast('Day reset')};
+$('nextq').onclick=()=>{S.qi=(S.qi+1)%QUOTES.length;save();showQuote()};
+$('favq').onclick=()=>{const i=S.qi%QUOTES.length,k=S.favs.indexOf(i);k>-1?S.favs.splice(k,1):S.favs.push(i);save();showQuote()};
+
+/* Reminders */
+const LN=(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications)||null;
+async function ensureChannel(){try{await LN.createChannel({id:'water-peace',name:'Water reminders',description:'Gentle hydration reminders',importance:4,sound:'peaceful.wav',vibration:true,visibility:1})}catch(e){}}
+async function nativeSchedule(){
+  if(!LN)return;
+  try{
+    await ensureChannel();
+    const p=await LN.getPending();
+    if(p.notifications.length)await LN.cancel({notifications:p.notifications});
+    if(!S.rem)return;
+    const out=[],end=Date.now()+48*36e5,body=`Time for a sip. ${fmt(Math.max(0,GOAL-total()))} ml to go today.`;
+    let t=Date.now()+S.int*60000,id=1;
+    while(t<end&&out.length<60){const h=new Date(t).getHours();
+      if(h>=7&&h<22)out.push({id:id++,title:'Lilac Sip 💧',body,channelId:'water-peace',schedule:{at:new Date(t),allowWhileIdle:true}});
+      t+=S.int*60000}
+    if(out.length)await LN.schedule({notifications:out});
+  }catch(e){}
+}
+function scheduleNext(fromNow){S.next=S.rem?Date.now()+S.int*60000:0;nativeSchedule()}
+function notify(test){
+  const h=new Date().getHours(),left=GOAL-total();
+  const msg=left>0?`Time for a sip. ${fmt(left)} ml to go today.`:'Goal met! A sip is still nice.';
+  chime();toast('💧 '+msg);
+  try{if('Notification' in window&&Notification.permission==='granted')new Notification('Lilac Sip 💧',{body:msg})}catch(e){}
+}
+$('rem').onclick=async()=>{
+  S.rem=!S.rem;
+  if(S.rem){
+    if('Notification' in window&&Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}
+    if(LN){try{await LN.requestPermissions()}catch(e){}}
+    scheduleNext();
+  }else{S.next=0;nativeSchedule()}
+  save();render();remNote();
+};
+$('snd').onclick=()=>{S.snd=!S.snd;save();render()};
+$('int').onchange=e=>{S.int=+e.target.value;scheduleNext();save();remNote()};
+$('test').onclick=async()=>{
+  if('Notification' in window&&Notification.permission==='default'){try{await Notification.requestPermission()}catch(e){}}
+  if(LN){try{await LN.requestPermissions();await ensureChannel();await LN.schedule({notifications:[{id:999,title:'Lilac Sip 💧',body:'Test reminder. Time for a sip!',channelId:'water-peace',schedule:{at:new Date(Date.now()+2000)}}]})}catch(e){}}
+  else notify(true);
+  remNote()};
+function remNote(){
+  let n='';
+  if(!('Notification' in window))n='This browser has no notification support; you\'ll get an in-app chime and message instead.';
+  else if(Notification.permission==='denied')n='Notifications are blocked in your browser settings. In-app chime and messages still work.';
+  else if(S.rem)n='Next reminder around '+new Date(S.next).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+'. Keep this tab or app open for reminders.';
+  else n='Turn reminders on to get a chime and a notification.';
+  if(LN)n=S.rem?'Reminders run in the background, even when the app is closed.':'Turn reminders on to get background notifications.';
+  $('remnote').textContent=n}
+setInterval(()=>{
+  if(S.date!==today()){S=load();save();render();greet()}
+  if(S.rem&&S.next&&Date.now()>=S.next){
+    const h=new Date().getHours();
+    if(h>=7&&h<22&&!LN)notify();
+    scheduleNext();save();remNote();
+  }
+},15000);
+setInterval(greet,60000);
+
+greet();render();remNote();
+if(S.rem&&(!S.next||S.next<Date.now()))scheduleNext(),save();
+nativeSchedule();
+</script>
+</body>
+</html>
